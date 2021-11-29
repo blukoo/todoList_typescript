@@ -18,8 +18,7 @@
       const store = useStore();
       const date = ref<any>(new Date());
       const onDayClick = (e: any) => {
-        const insert = e.date;
-        context.emit('selectDate', todoDate(e));
+        context.emit('selectDate', todoDate(e.date));
         console.log(e.currentTarget, e.target, e, todoDate(new Date()));
 
         closePop();
