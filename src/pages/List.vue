@@ -1,10 +1,10 @@
 <template>
   <div class="list-wrap">
     <div class="list-container">
-      <todoData :listIndex="listIndex" :date="insertDate" :cate="insertData" @setCalendar="setCalendar"></todoData>
+      <todoData :listIndex="listIndex" :date="insertDate" :cate="cate.write" @setCalendar="setCalendar" @addTodo="addTodo"></todoData>
       <ul>
-        <li v-for="(e, i) in list" :key="i">
-          <Write :listData="e" :cate="pastData"></Write>
+        <li v-for="(e, i) in listStore" :key="i">
+          <todoData :listData="e" :cate="cate.store"></todoData>
         </li>
         <li class="loading" v-if="!loading"><img src="@/assets/images/loading.png" /></li>
       </ul>
@@ -18,6 +18,7 @@
   import { useStore } from 'vuex';
   import todoData from '../components/todoData.vue';
   import Popup from '../components/Popup.vue';
+  import moment from 'moment';
   export type listDataType = {
     number?: number;
     work?: string;
@@ -28,10 +29,9 @@
   export default defineComponent({
     components: { todoData, Popup },
     setup() {
-      const cate = ref<string>('');
       const loading = ref<boolean>(false);
       const store = useStore();
-      const insertDate = ref<Date>(new Date());
+      const insertDate = ref<string | Date>(moment(new Date()).format('YY년 MM월 DD일'));
       const list = reactive<[listDataType]>([
         {
           number: 1,
@@ -40,6 +40,8 @@
           date: '',
         },
       ]);
+      const cate = ref<{ write: string; store: string }>({ write: 'write', store: 'store' });
+      const listStore = ref<[listDataType]>([{}]);
       const listIndex: number | undefined = list[list.length - 1].number;
       // const visiblePopup = (flag: boolean) => {
       //   store.state = flag;
@@ -48,10 +50,14 @@
         insertDate.value = date;
         console.log(date, insertDate.value);
       };
+      const addTodo = (newList: listDataType) => {
+        console.log(newList);
+        listStore.value.push(newList);
+      };
       const setCalendar = () => {
         store.commit('SET_POP', true);
       };
-      return { list, cate, listIndex, loading, store, insertDate, setCalendar, selectDate };
+      return { list, cate, listIndex, loading, store, insertDate, setCalendar, selectDate, addTodo, listStore };
     },
   });
 </script>

@@ -19,7 +19,6 @@
       const date = ref<any>(new Date());
       const onDayClick = (e: any) => {
         context.emit('selectDate', todoDate(e.date));
-        console.log(e.currentTarget, e.target, e, todoDate(new Date()));
 
         closePop();
       };
@@ -40,14 +39,10 @@
         return window.innerHeight;
       });
       const todoDate = (dateData: Date) => {
-        date.value = moment(dateData).format('yy년 MM월 DD일');
+        date.value = moment(dateData).format('YY년 MM월 DD일');
         return date.value;
       };
-      onMounted(() => {
-        // if(date.value!==undefined){
-        //   date.value=moment(date.value)).format('MM월 DD일');
-        // }
-      });
+      // onMounted(() => {});
       return { date, blurCalendar, onDayClick, popInnerHeight, attr, todoDate };
     },
   });
