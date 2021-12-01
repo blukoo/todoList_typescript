@@ -9,7 +9,7 @@
         <li class="loading" v-if="!loading"><img src="@/assets/images/loading.png" /></li>
       </ul>
     </div>
-    <Popup v-if="store.state.checkPop" @selectDate="selectDate"></Popup>
+    <Popup v-if="store.state.checkPop" :popset="popset" @selectDate="selectDate" @emptyDate="emptyDate"></Popup>
   </div>
 </template>
 
@@ -24,6 +24,12 @@
     work?: string;
     time?: number | string;
     date?: Date | string;
+  };
+  export type popType = {
+    context: { text: string };
+    confirmBtn: { flag: boolean; text: string };
+    cancelBtn: { flag: boolean; text: string };
+    calendar: { flag: boolean };
   };
 
   export default defineComponent({
@@ -40,12 +46,15 @@
           date: '',
         },
       ]);
+      const popset = reactive<{ popType as popType }>({
+        context: { text: '' },
+        confirmBtn: { flag: false, text: '' },
+        cancelBtn: { flag: false, text: '' },
+        calendar: { flag: false },
+      });
       const cate = ref<{ write: string; store: string }>({ write: 'write', store: 'store' });
       const listStore = ref<[listDataType]>([{}]);
       const listIndex: number | undefined = list[list.length - 1].number;
-      // const visiblePopup = (flag: boolean) => {
-      //   store.state = flag;
-      // };
       const selectDate = (date: Date) => {
         insertDate.value = date;
         console.log(date, insertDate.value);
@@ -54,10 +63,25 @@
         console.log(newList);
         listStore.value.push(newList);
       };
-      const setCalendar = () => {
+      const emptyDate = (msg: string) => {
+        popset.context.text = msg;
+        popset.confirmBtn.text = '확인';
+        popset.cancelBtn.flag = true;
+        popset.cancelBtn.text = '취소';
+        popset.cancelBtn.flag = true;
+        popset.cancelBtn.text = '취소';
+        popset.calendar.flag = false;
         store.commit('SET_POP', true);
       };
-      return { list, cate, listIndex, loading, store, insertDate, setCalendar, selectDate, addTodo, listStore };
+      const setCalendar = () => {
+        popset.confirmBtn.flag = true;
+        popset.confirmBtn.text = '확인';
+        popset.cancelBtn.flag = true;
+        popset.cancelBtn.text = '취소';
+        popset.calendar.flag = true;
+        store.commit('SET_POP', true);
+      };
+      return { list, cate, listIndex, loading, store, insertDate, popset, setCalendar, selectDate, addTodo, listStore };
     },
   });
 </script>
