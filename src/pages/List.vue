@@ -2,7 +2,7 @@
   <div class="list-wrap">
     <div class="list-container">
       <todoData :listIndex="listIndex" :date="insertDate" :cate="cate.write" @setCalendar="setCalendar" @addTodo="addTodo"></todoData>
-      <ul>
+      <ul class="new_plan" v-if="storeListFlag">
         <li v-for="(e, i) in listStore" :key="i">
           <todoData :listData="e" :cate="cate.store"></todoData>
         </li>
@@ -14,7 +14,7 @@
 </template>
 
 <script lang="ts">
-  import { defineComponent, ref, reactive } from 'vue';
+  import { defineComponent, ref, reactive, computed } from 'vue';
   import { useStore } from 'vuex';
   import todoData from '../components/todoData.vue';
   import Popup from '../components/Popup.vue';
@@ -46,7 +46,7 @@
           date: '',
         },
       ]);
-      const popset = reactive<{ popType as popType }>({
+      const popset = reactive<popType>({
         context: { text: '' },
         confirmBtn: { flag: false, text: '' },
         cancelBtn: { flag: false, text: '' },
@@ -60,8 +60,16 @@
         console.log(date, insertDate.value);
       };
       const addTodo = (newList: listDataType) => {
-        console.log(newList);
+        console.log(JSON.stringify(listStore.value), listStore.value, JSON.parse(localStorage.getItem('plan_list') as string));
+        if (window.localStorage.getItem('plan_list') === null) {
+          window.localStorage.setItem('plan_list', JSON.stringify(listStore.value));
+        } else {
+          if (localStorage.getItem('plan_list') !== null) {
+            JSON.parse(localStorage.getItem('plan_list') as string).push(listStore.value);
+          }
+        }
         listStore.value.push(newList);
+        console.log(newList, listStore.value);
       };
       const emptyDate = (msg: string) => {
         popset.context.text = msg;
@@ -81,18 +89,26 @@
         popset.calendar.flag = true;
         store.commit('SET_POP', true);
       };
-      return { list, cate, listIndex, loading, store, insertDate, popset, setCalendar, selectDate, addTodo, listStore };
+      const storeListFlag = computed(() => {
+        if (localStorage.getItem('plan_list')) {
+          return true;
+        } else {
+          return false;
+        }
+      });
+      return { list, cate, listIndex, loading, store, insertDate, popset, setCalendar, selectDate, addTodo, listStore, storeListFlag };
     },
   });
 </script>
 
 <style lang="scss">
   .list-wrap {
-    width: 80%;
+    width: 85%;
     background-color: #fff;
     margin: 5vh auto;
     border: 2px dotted blue;
     .list-container {
+      padding: 10px 5px;
     }
     .loading {
       width: 100%;

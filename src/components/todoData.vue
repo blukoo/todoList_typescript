@@ -1,10 +1,12 @@
 <template>
-  <div>
-    <div>
-      <label>번호</label><input type="text" :value="list.number" readonly /> <label>계획</label><input type="text" v-model="list.work" :readonly="readonlyFlag" /> <label>계획</label
-      ><input type="text" v-model="list.time" :readonly="readonlyFlag" /> <label @click="setCalendar">날짜</label><input type="text" v-model="list.date" :readonly="readonlyFlag" />
-    </div>
-    <button v-if="cate === 'write'" @click="addTodo">+</button>
+  <div class="todo_list">
+    <ul class="plan_list">
+      <li><label>번호</label><input type="text" :value="list.number" readonly /></li>
+      <li><label>계획</label><input type="text" v-model="list.work" :readonly="readonlyFlag" /></li>
+      <li><label>계획</label><input type="text" v-model="list.time" :readonly="readonlyFlag" /></li>
+      <li><label @click="setCalendar">날짜</label><input type="text" v-model="list.date" :readonly="readonlyFlag" /></li>
+    </ul>
+    <div class="btn_wrap"><button v-if="cate === 'write'" @click="addTodo">+</button></div>
   </div>
 </template>
 
@@ -37,6 +39,7 @@
         context.emit('setCalendar');
       };
       const addTodo = () => {
+        console.log(list);
         context.emit('addTodo', list);
       };
       watchEffect(() => {
@@ -54,4 +57,24 @@
   });
 </script>
 
-<style lang="scss"></style>
+<style lang="scss">
+  .todo_list {
+    display: flex;
+    .plan_list {
+      display: inline-block;
+      li {
+        display: inline-block;
+      }
+      label {
+        width: 30%;
+        background-color: aquamarine;
+        display: inline-block;
+      }
+      input {
+        width: 70%;
+      }
+    }
+    .btn_wrap {
+    }
+  }
+</style>

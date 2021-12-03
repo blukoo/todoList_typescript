@@ -19,16 +19,16 @@
   import { defineComponent, ref, computed, reactive, PropType, onMounted } from 'vue';
   import { Calendar, DatePicker } from 'v-calendar';
   import { useStore } from 'vuex';
-  import type { listDataType } from '../pages/List.vue';
+  import type { listDataType, popType } from '../pages/List.vue';
   import moment from 'moment';
   export default defineComponent({
     components: { DatePicker },
     props: {
-      popset: Object as PropType<listDataType>,
+      popset: Object as PropType<popType>,
     },
     setup(props, context) {
       const store = useStore();
-      const date = ref<any>(new Date());
+      const date = ref<Date | string>('');
       const onDayClick = (e: any) => {
         context.emit('selectDate', todoDate(e.date));
       };
@@ -47,7 +47,7 @@
         store.commit('SET_POP', false);
       };
       const confirmPop = () => {
-        if (props.popset.calendar.flag) {
+        if (props.popset?.calendar.flag) {
           if (!date.value) {
             context.emit('emptyDate', '날짜를 선택해주세요');
           } else {
