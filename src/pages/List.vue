@@ -1,24 +1,35 @@
 <template>
   <div class="list-wrap">
     <div class="list-container">
-      <todoData :listIndex="listIndex" :date="insertDate" :cate="cate.write" @setCalendar="setCalendar" @addTodo="addTodo"></todoData>
+      <todoData :listData="newListData" :date="insertDate" :cate="cate.write" @setCalendar="setCalendar" @addTodo="addTodo"></todoData>
+      <!-- <draggable v-model="listStore" class="dragable">
+        <transition-group name="fade"> -->
       <ul class="new_plan" v-if="storeListFlag">
         <li v-for="(e, i) in listStore" :key="i">
           <todoData :listData="e" :cate="cate.store"></todoData>
+          <button @click="loading = !loading">버튼</button>
         </li>
-        <li class="loading" v-if="!loading"><img src="@/assets/images/loading.png" /></li>
+        <li class="loading">
+          <transition-group name="fade" tag="div"><img v-if="!loading" src="@/assets/images/loading.png" /></transition-group>
+        </li>
       </ul>
+      <!-- </transition-group>
+      </draggable> -->
     </div>
+    <draggable>
+      <div>dd</div>
+    </draggable>
     <Popup v-if="store.state.checkPop" :popset="popset" @selectDate="selectDate" @emptyDate="emptyDate"></Popup>
   </div>
 </template>
 
 <script lang="ts">
-  import { defineComponent, ref, reactive, computed } from 'vue';
+  import { defineComponent, ref, reactive, computed, onMounted, watch } from 'vue';
   import { useStore } from 'vuex';
   import todoData from '../components/todoData.vue';
   import Popup from '../components/Popup.vue';
   import moment from 'moment';
+  import { VueDraggableNext } from 'vue-draggable-next';
   export type listDataType = {
     number?: number;
     work?: string;
@@ -33,7 +44,7 @@
   };
 
   export default defineComponent({
-    components: { todoData, Popup },
+    components: { todoData, Popup, draggable: VueDraggableNext },
     setup() {
       const loading = ref<boolean>(false);
       const store = useStore();
@@ -46,6 +57,13 @@
           date: '',
         },
       ]);
+      const newListData = reactive<listDataType>({
+        number: 1,
+        work: '',
+        time: '',
+        date: '',
+      });
+      const listStore = reactive<[listDataType?]>([]);
       const popset = reactive<popType>({
         context: { text: '' },
         confirmBtn: { flag: false, text: '' },
@@ -53,23 +71,29 @@
         calendar: { flag: false },
       });
       const cate = ref<{ write: string; store: string }>({ write: 'write', store: 'store' });
-      const listStore = ref<[listDataType]>([{}]);
-      const listIndex: number | undefined = list[list.length - 1].number;
       const selectDate = (date: Date) => {
         insertDate.value = date;
         console.log(date, insertDate.value);
       };
       const addTodo = (newList: listDataType) => {
-        console.log(JSON.stringify(listStore.value), listStore.value, JSON.parse(localStorage.getItem('plan_list') as string));
-        if (window.localStorage.getItem('plan_list') === null) {
-          window.localStorage.setItem('plan_list', JSON.stringify(listStore.value));
-        } else {
-          if (localStorage.getItem('plan_list') !== null) {
-            JSON.parse(localStorage.getItem('plan_list') as string).push(listStore.value);
-          }
+        console.log(listStore, newList, { ...newList }, typeof listStore, '에드');
+        listStore.push({ ...newList });
+        window.localStorage.setItem('plan_list', JSON.stringify(listStore));
+        newListData.number = (newListData.number as number) + 1;
+        console.log(listStore, '애드3');
+      };
+      const setStoreList = () => {
+        if (window.localStorage.getItem('plan_list')) {
+          console.log(JSON.parse(window.localStorage.getItem('plan_list') as string));
+          const plan = JSON.parse(window.localStorage.getItem('plan_list') as string);
+          console.log(plan, '플랜ㅇ');
+          plan.forEach((e: listDataType, i: number) => {
+            listStore?.push({ ...e });
+          });
+          newListData.number = listStore.length + 1;
+          console.log(typeof listStore, listStore);
+          // listStore = [JSON.parse(window.localStorage.getItem('plan_list') as string)];
         }
-        listStore.value.push(newList);
-        console.log(newList, listStore.value);
       };
       const emptyDate = (msg: string) => {
         popset.context.text = msg;
@@ -90,13 +114,17 @@
         store.commit('SET_POP', true);
       };
       const storeListFlag = computed(() => {
-        if (localStorage.getItem('plan_list')) {
+        if (listStore) {
           return true;
         } else {
           return false;
         }
       });
-      return { list, cate, listIndex, loading, store, insertDate, popset, setCalendar, selectDate, addTodo, listStore, storeListFlag };
+      // watch(listStore, () => setStoreList());
+      onMounted(() => {
+        setStoreList();
+      });
+      return { list, cate, loading, store, insertDate, popset, newListData, setStoreList, setCalendar, selectDate, addTodo, listStore, storeListFlag };
     },
   });
 </script>
@@ -131,6 +159,13 @@
         }
       }
     }
+  }
+  .fade-enter-active,
+  .fade-leave-active {
+    transition: opacity 0.5s;
+  }
+  .fade-enter, .fade-leave-to /* .fade-leave-active below version 2.1.8 */ {
+    opacity: 0;
   }
 </style>
 <style></style>
