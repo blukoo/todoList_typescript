@@ -5,7 +5,7 @@
         <div><DatePicker v-model="date" @dayclick="onDayClick" :attruibutes="attr" /></div>
       </div>
       <div class="contextWrap" v-if="popset.context">
-        <div>{{ popset.context }}</div>
+        <div>{{ popset.context.text }}</div>
       </div>
       <div class="btnWrap">
         <button v-if="popset.cancelBtn.flag" @click="closePop">{{ popset.cancelBtn.text }}</button>
@@ -88,10 +88,14 @@
     left: 50%;
     top: 50%;
     transform: translate(-50%, -50%);
+    .contextWrap {
+      height: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
     .btnWrap {
       width: 100%;
-      position: absolute;
-      bottom: 0;
       button {
         width: 50%;
         line-height: 40px;

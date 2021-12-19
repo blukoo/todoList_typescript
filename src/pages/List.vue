@@ -1,22 +1,21 @@
 <template>
   <div class="list-wrap">
     <div class="list-container">
-      <todoData :listData="newListData" :date="insertDate" :cate="cate.write" @setCalendar="setCalendar" @addTodo="addTodo"></todoData>
-      <!-- <draggable v-model="listStore" class="dragable">
-        <transition-group name="fade"> -->
-      <ul class="new_plan" v-if="storeListFlag">
-        <li v-for="(e, i) in listStore" :key="i">
-          <todoData :listData="e" :cate="cate.store"></todoData>
-          <button @click="loading = !loading">버튼</button>
-        </li>
-        <li class="loading">
+      <insert :listData="newListData" :cate="cate.write" @setCalendar="setCalendar" @addTodo="addTodo"></insert>
+      <div class="new_plan" v-if="storeListFlag">
+        <draggable @update="changeOrder" :list="listStore" :sort="true" dragable="true">
+          <transition-group>
+            <div v-for="(e, i) in listStore" :key="i">
+              <todoData :listData="e" :cate="cate.store" :number="i + 1"></todoData>
+            </div>
+          </transition-group>
+        </draggable>
+        <div class="loading">
           <transition-group name="fade" tag="div"><img v-if="!loading" src="@/assets/images/loading.png" /></transition-group>
-        </li>
-      </ul>
-      <!-- </transition-group>
-      </draggable> -->
+        </div>
+      </div>
     </div>
-    <draggable>
+    <draggable v-model="listStore">
       <div>dd</div>
     </draggable>
     <Popup v-if="store.state.checkPop" :popset="popset" @selectDate="selectDate" @emptyDate="emptyDate"></Popup>
@@ -24,10 +23,11 @@
 </template>
 
 <script lang="ts">
-  import { defineComponent, ref, reactive, computed, onMounted, watch } from 'vue';
+  import { defineComponent, ref, reactive, computed, onMounted, watch, onBeforeMount } from 'vue';
   import { useStore } from 'vuex';
-  import todoData from '../components/todoData.vue';
+  import todoData from '../components/TodoData.vue';
   import Popup from '../components/Popup.vue';
+  import Insert from '@/components/Insert.vue';
   import moment from 'moment';
   import { VueDraggableNext } from 'vue-draggable-next';
   export type listDataType = {
@@ -44,24 +44,15 @@
   };
 
   export default defineComponent({
-    components: { todoData, Popup, draggable: VueDraggableNext },
+    components: { todoData, Popup, draggable: VueDraggableNext, Insert },
     setup() {
       const loading = ref<boolean>(false);
       const store = useStore();
-      const insertDate = ref<string | Date>(moment(new Date()).format('YY년 MM월 DD일'));
-      const list = reactive<[listDataType]>([
-        {
-          number: 1,
-          work: '',
-          time: '',
-          date: '',
-        },
-      ]);
       const newListData = reactive<listDataType>({
         number: 1,
         work: '',
         time: '',
-        date: '',
+        date: moment(new Date()).format('YY년 MM월 DD일'),
       });
       const listStore = reactive<[listDataType?]>([]);
       const popset = reactive<popType>({
@@ -71,35 +62,56 @@
         calendar: { flag: false },
       });
       const cate = ref<{ write: string; store: string }>({ write: 'write', store: 'store' });
-      const selectDate = (date: Date) => {
-        insertDate.value = date;
-        console.log(date, insertDate.value);
+      const changeOrder = (event: Event) => {
+        let passData: listDataType[] = [];
+        listStore.forEach((e, i) => {
+          (e as listDataType).number = i + 1;
+          passData.push(e as listDataType);
+        });
+        window.localStorage.setItem('plan_list', JSON.stringify(passData));
       };
-      const addTodo = (newList: listDataType) => {
-        console.log(listStore, newList, { ...newList }, typeof listStore, '에드');
-        listStore.push({ ...newList });
+      const selectDate = (date: Date) => {
+        newListData.date = date;
+      };
+      const addTodo = (list: listDataType) => {
+        newListData.date = list.date;
+        newListData.time = list.time;
+        newListData.work = list.work;
+        const values = Object.values(newListData);
+        const keys = Object.keys(newListData);
+        console.log(values, keys, '??');
+        if (values.includes('')) {
+          const emptyVal = values.filter((e, i) => {
+            if (e === '') {
+              console.log(i, keys[i]);
+              return keys[i];
+            }
+          });
+          console.log(emptyVal, '?');
+          for (let e of emptyVal) {
+            console.log(keys[e as number]);
+            keys[e as number];
+            emptyInsert(keys[e as number]);
+          }
+          return;
+        }
+        listStore.push({ ...newListData });
         window.localStorage.setItem('plan_list', JSON.stringify(listStore));
         newListData.number = (newListData.number as number) + 1;
-        console.log(listStore, '애드3');
       };
       const setStoreList = () => {
         if (window.localStorage.getItem('plan_list')) {
-          console.log(JSON.parse(window.localStorage.getItem('plan_list') as string));
           const plan = JSON.parse(window.localStorage.getItem('plan_list') as string);
-          console.log(plan, '플랜ㅇ');
           plan.forEach((e: listDataType, i: number) => {
             listStore?.push({ ...e });
           });
           newListData.number = listStore.length + 1;
-          console.log(typeof listStore, listStore);
-          // listStore = [JSON.parse(window.localStorage.getItem('plan_list') as string)];
         }
       };
-      const emptyDate = (msg: string) => {
+      const emptyInsert = (msg: string) => {
         popset.context.text = msg;
         popset.confirmBtn.text = '확인';
-        popset.cancelBtn.flag = true;
-        popset.cancelBtn.text = '취소';
+        popset.confirmBtn.flag = true;
         popset.cancelBtn.flag = true;
         popset.cancelBtn.text = '취소';
         popset.calendar.flag = false;
@@ -120,16 +132,16 @@
           return false;
         }
       });
-      // watch(listStore, () => setStoreList());
-      onMounted(() => {
+      onBeforeMount(() => {
         setStoreList();
       });
-      return { list, cate, loading, store, insertDate, popset, newListData, setStoreList, setCalendar, selectDate, addTodo, listStore, storeListFlag };
+      return { cate, loading, store, popset, newListData, listStore, storeListFlag, changeOrder, setStoreList, setCalendar, selectDate, addTodo, emptyInsert };
     },
   });
 </script>
 
 <style lang="scss">
+  @import '../assets/css/_mixin';
   .list-wrap {
     width: 85%;
     background-color: #fff;
@@ -162,10 +174,9 @@
   }
   .fade-enter-active,
   .fade-leave-active {
-    transition: opacity 0.5s;
+    transition: background;
   }
   .fade-enter, .fade-leave-to /* .fade-leave-active below version 2.1.8 */ {
-    opacity: 0;
+    background: red;
   }
 </style>
-<style></style>

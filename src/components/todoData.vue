@@ -1,24 +1,17 @@
 <template>
   <div class="todo_list">
-    <ul class="plan_list" v-if="cate === 'write'">
-      <li><label>번호writ</label><input type="text" v-model="list.number" readonly /></li>
-      <li><label>계획</label><input type="text" v-model="list.work" :readonly="readonlyFlag" /></li>
-      <li><label>계획</label><input type="text" v-model="list.time" :readonly="readonlyFlag" /></li>
-      <li><label @click="setCalendar">날짜</label><input type="text" :value="date" :readonly="readonlyFlag" /></li>
+    <ul class="plan_list">
+      <li><label>번호no</label><input type="text" v-model="listDataP.number" readonly /></li>
+      <li><label>계획</label><input type="text" v-model="listDataP.work" readonly /></li>
+      <li><label>계획</label><input type="text" v-model="listDataP.time" readonly /></li>
+      <li><label @click="setCalendar">날짜</label><input type="text" v-model="listDataP.date" readonly /></li>
     </ul>
-    <ul class="plan_list" v-if="cate !== 'write'">
-      <li><label>번호no</label><input type="text" v-model="list.number" readonly /></li>
-      <li><lasbel>계획</lasbel><input type="text" v-model="list.work" :readonly="readonlyFlag" /></li>
-      <li><label>계획</label><input type="text" v-model="list.time" :readonly="readonlyFlag" /></li>
-      <li><label @click="setCalendar">날짜</label><input type="text" v-model="list.date" :readonly="readonlyFlag" /></li>
-    </ul>
-    <div class="btn_wrap"><button v-if="cate === 'write'" @click="addTodo">+</button></div>
   </div>
 </template>
 
 <script lang="ts">
   import moment from 'moment';
-  import { defineComponent, ref, reactive, PropType, computed, onMounted, watch, watchEffect, toRefs } from 'vue';
+  import { defineComponent, reactive, PropType, computed, onMounted, watch, watchEffect, toRefs, toRef } from 'vue';
   import { useStore } from 'vuex';
   import type { listDataType } from '../pages/List.vue';
   export default defineComponent({
@@ -26,68 +19,33 @@
       listData: Object as PropType<listDataType>,
       date: { type: [Date, String] },
       cate: { type: String, default: '' },
+      number: { type: Number, default: 0 },
     },
     setup(props, context) {
+      let listDataP = toRef(props, 'listData');
+      let numberDataP = toRef(props, 'number');
       let list = reactive<listDataType>({
-        number: props.listData?.number,
-        work: props.listData?.work,
-        time: props.listData?.time,
-        date: moment(new Date()).format('YY년 MM월 DD일'),
+        number: numberDataP.value,
+        work: listDataP.value?.work,
+        time: listDataP.value?.time,
+        date: listDataP.value?.date || moment(new Date()).format('YY년 MM월 DD일'),
       });
       const store = useStore();
-      const initData = (cate: string) => {
-        if (cate !== 'insertData' && props.listData) {
+      const initData = () => {
+        if (props.listData) {
           list = { ...props.listData };
         }
       };
       const setCalendar = () => {
         context.emit('setCalendar');
       };
-      const addTodo = () => {
-        if (props.cate === 'write') {
-          // let { date } = toRefs(props);
-          // list.date = date.value;
-          // console.log(date.value, list.date);
-          context.emit('addTodo', list);
-        }
-        // if (props.cate === 'write') {
-        //   list.number = (list.number as number) + 1;
-        // }
-      };
-      const setNewNumber = () => {
-        const plan = JSON.parse(window.localStorage.getItem('plan_list') as string);
-        if (props.cate !== 'write') return;
-        if (plan !== null) {
-          list.number = props.listData?.number;
-        }
-      };
       const setStoreList = () => {
-        if (props.cate === 'write') return;
-        if (props.cate !== 'write') {
-          let { listData } = toRefs(props);
-          list.date = props.listData?.date;
-          console.log({ ...props.listData }, list);
-        }
+        list = listDataP.value as listDataType;
       };
-      watch(props.listData as listDataType, () => {
-        if (props.cate === 'write') {
-          setNewNumber();
-        } else {
-          // setStoreList();
-        }
-      });
-      // return (list.date = props.date), (window.localStorage.getItem('plan_list') = setNewNumber);
-      const readonlyFlag = computed(() => {
-        return props.cate === 'write' ? false : true;
-      });
       onMounted(() => {
-        if (props.cate === 'write') {
-          setNewNumber();
-        } else {
-          setStoreList();
-        }
+        setStoreList();
       });
-      return { list, initData, setCalendar, addTodo, setNewNumber, setStoreList, readonlyFlag };
+      return { list, initData, setCalendar, listDataP, numberDataP, setStoreList };
     },
   });
 </script>
