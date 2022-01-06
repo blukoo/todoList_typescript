@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="back">
     <main-header />
     <main>
       <slot></slot>
@@ -17,4 +17,9 @@
   });
 </script>
 
-<style></style>
+<style>
+  .back {
+    background-image: url('../assets/images/background_image.jpg');
+    background-size: cover;
+  }
+</style>

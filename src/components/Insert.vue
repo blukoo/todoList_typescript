@@ -1,9 +1,8 @@
 <template>
   <div class="insert_wrap">
     <ul class="plan_list">
-      <li><label>번호writ</label><input type="text" v-model="listDataP.number" readonly /></li>
-      <li><label>계획</label><input type="text" v-model="listDataP.work" /></li>
-      <li><label>계획</label><input type="text" v-model="listDataP.time" /></li>
+      <li><label class="num">번호writ</label><input class="num_value" type="text" v-model="listDataP.number" readonly /></li>
+      <li><label>계획</label><textarea type="text" v-model="listDataP.work" /></li>
       <li><label @click="setCalendar">날짜</label><input type="text" :value="listDataP.date" /></li>
     </ul>
     <div class="btn_wrap"><button @click="addTodo" class="add_btn">+</button></div>
@@ -37,23 +36,54 @@
 <style lang="scss">
   .insert_wrap {
     display: flex;
+    justify-content: center;
     .plan_list {
-      display: inline-block;
+      width: calc(100% - 20px);
+      display: flex;
       li {
         display: inline-block;
+        flex-grow: 1;
+        &:nth-child(1) {
+          flex-basis: 150px;
+          flex-grow: 0;
+        }
       }
       label {
-        width: 30%;
+        width: 50%;
+        height: 100%;
         background-color: blue;
         display: inline-block;
         color: #fff;
+        vertical-align: middle;
+        line-height: 22px;
+        &.num {
+          width: 30%;
+        }
       }
       input {
-        width: 70%;
+        width: 50%;
+        height: 100%;
+        text-align: center;
+        box-sizing: border-box;
+        border: 1px solid red;
+        vertical-align: middle;
+        &.num_value {
+          width: 70%;
+        }
+      }
+      textarea {
+        width: 50%;
+        vertical-align: middle;
       }
     }
     .btn_wrap {
       button {
+        width: 20px;
+        padding: 0;
+        height: 20px;
+        line-height: 19px;
+        vertical-align: middle;
+        text-align: center;
         background-color: red;
       }
     }

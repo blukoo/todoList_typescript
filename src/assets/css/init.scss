@@ -142,6 +142,9 @@ a:active {
   color: #fff;
 }
 button {
+  background: inherit;
+  box-shadow: none;
+  padding: 0;
   border-radius: 10px;
   font-size: 16px;
   color: #fff;
@@ -157,4 +160,15 @@ label {
   font-family: 'AppleSDGothicNeoB00';
   color: #292a2b;
   text-align: left;
+}
+@font-face {
+  font-family: Rock3D-Regular;
+  src: url('~@/assets/fonts/Rock3D-Regular.ttf')
+    format('woff');
+}
+
+@font-face {
+  font-family: cute;
+  src: url('~@/assets/fonts/CuteFont-Regular.ttf')
+    format('woff');
 }

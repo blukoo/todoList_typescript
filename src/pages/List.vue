@@ -1,12 +1,12 @@
 <template>
   <div class="list-wrap">
     <div class="list-container">
-      <insert :listData="newListData" :cate="cate.write" @setCalendar="setCalendar" @addTodo="addTodo"></insert>
+      <TodoData :listData="newListData" :cate="cate.write" @setCalendar="setCalendar" @addTodo="addTodo"></TodoData>
       <div class="new_plan" v-if="storeListFlag">
-        <draggable @update="changeOrder" :list="listStore" :sort="true" dragable="true">
+        <draggable class="store_list_wrap" @update="changeOrder" :list="listStore" :sort="true" dragable="true">
           <transition-group>
-            <div v-for="(e, i) in listStore" :key="i">
-              <todoData :listData="e" :cate="cate.store" :number="i + 1"></todoData>
+            <div class="data" v-for="(e, i) in listStore" :key="i">
+              <TodoData :listData="e" :cate="cate.store" :number="i + 1" @delTodo="delTodo"></TodoData>
             </div>
           </transition-group>
         </draggable>
@@ -18,16 +18,16 @@
     <draggable v-model="listStore">
       <div>dd</div>
     </draggable>
-    <Popup v-if="store.state.checkPop" :popset="popset" @selectDate="selectDate" @emptyDate="emptyDate"></Popup>
+    <Popup v-if="store.state.checkPop" :popset="popset" @selectDate="selectDate"></Popup>
+    <pagination></pagination>
   </div>
 </template>
 
 <script lang="ts">
   import { defineComponent, ref, reactive, computed, onMounted, watch, onBeforeMount } from 'vue';
   import { useStore } from 'vuex';
-  import todoData from '../components/TodoData.vue';
-  import Popup from '../components/Popup.vue';
-  import Insert from '@/components/Insert.vue';
+  import TodoData from '@/components/TodoData.vue';
+  import Popup from '@/components/Popup.vue';
   import moment from 'moment';
   import { VueDraggableNext } from 'vue-draggable-next';
   export type listDataType = {
@@ -44,7 +44,7 @@
   };
 
   export default defineComponent({
-    components: { todoData, Popup, draggable: VueDraggableNext, Insert },
+    components: { TodoData, Popup, draggable: VueDraggableNext },
     setup() {
       const loading = ref<boolean>(false);
       const store = useStore();
@@ -79,7 +79,6 @@
         newListData.work = list.work;
         const values = Object.values(newListData);
         const keys = Object.keys(newListData);
-        console.log(values, keys, '??');
         if (values.includes('')) {
           const emptyVal = values.filter((e, i) => {
             if (e === '') {
@@ -87,7 +86,6 @@
               return keys[i];
             }
           });
-          console.log(emptyVal, '?');
           for (let e of emptyVal) {
             console.log(keys[e as number]);
             keys[e as number];
@@ -169,6 +167,14 @@
             transform: rotate(360deg);
           }
         }
+      }
+    }
+  }
+
+  .store_list_wrap {
+    .data:last-child {
+      input {
+        border-bottom: 1px solid red !important;
       }
     }
   }

@@ -1,11 +1,11 @@
 <template>
   <div class="todo_list">
-    <ul class="plan_list">
-      <li><label>번호no</label><input type="text" v-model="listDataP.number" readonly /></li>
-      <li><label>계획</label><input type="text" v-model="listDataP.work" readonly /></li>
-      <li><label>계획</label><input type="text" v-model="listDataP.time" readonly /></li>
-      <li><label @click="setCalendar">날짜</label><input type="text" v-model="listDataP.date" readonly /></li>
+    <ul class="plan_list" :class="cate">
+      <li><label>번호no</label><input type="text" v-model="listDataP.number" :readonly="cate !== 'write' ? true : false" /></li>
+      <li class="what_todo" @click="whatTodo"><label>계획</label><input type="text" v-model="listDataP.work" :readonly="cate !== 'write' ? true : false" /></li>
+      <li><label @click="setCalendar">날짜</label><input type="text" v-model="listDataP.date" :readonly="cate !== 'write' ? true : false" /></li>
     </ul>
+    <div class="btn_wrap"><button v-if="cate !== 'write'" @click="delTodo" class="del_btn">-</button><button v-else-if="cate === 'write'" @click="addTodo" class="add_btn">+</button></div>
   </div>
 </template>
 
@@ -30,7 +30,14 @@
         time: listDataP.value?.time,
         date: listDataP.value?.date || moment(new Date()).format('YY년 MM월 DD일'),
       });
-      const store = useStore();
+      const delTodo = () => {
+        console.log(listDataP.value, '리스트');
+        context.emit('delTodo', listDataP.value);
+      };
+      const addTodo = () => {
+        console.log(listDataP.value, '리스트');
+        context.emit('addTodo', listDataP.value);
+      };
       const initData = () => {
         if (props.listData) {
           list = { ...props.listData };
@@ -45,7 +52,7 @@
       onMounted(() => {
         setStoreList();
       });
-      return { list, initData, setCalendar, listDataP, numberDataP, setStoreList };
+      return { list, addTodo, delTodo, initData, setCalendar, listDataP, numberDataP, setStoreList };
     },
   });
 </script>
@@ -53,21 +60,80 @@
 <style lang="scss">
   .todo_list {
     display: flex;
+    justify-content: center;
     .plan_list {
-      display: inline-block;
+      width: calc(100% - 20px);
+      display: flex;
+      font-family: cute;
       li {
         display: inline-block;
+        flex-grow: 1;
+        &:nth-child(1) {
+          flex-basis: 150px;
+          flex-grow: 0;
+        }
+        &:nth-child(3) {
+          flex-basis: 200px;
+          flex-grow: 0;
+        }
+        label {
+          width: 50%;
+          height: 100%;
+          background-color: powderblue;
+          display: inline-block;
+          color: #fff;
+          vertical-align: middle;
+          line-height: 22px;
+          font-family: cute;
+          text-align: center;
+          &.num {
+            width: 30%;
+          }
+        }
+        input {
+          width: 50%;
+          height: 100%;
+          text-align: center;
+          box-sizing: border-box;
+          border: 1px solid red;
+          border-bottom: none;
+          vertical-align: middle;
+          font-family: cute;
+          &.num_value {
+            width: 70%;
+          }
+        }
+        &.what_todo {
+          display: flex;
+          label {
+            width: 150px;
+          }
+          input {
+            flex: 1;
+          }
+        }
       }
-      label {
-        width: 30%;
-        background-color: aquamarine;
-        display: inline-block;
+      &.write {
+        label {
+          background-color: blue;
+        }
       }
-      input {
-        width: 70%;
+      textarea {
+        width: 50%;
+        vertical-align: middle;
       }
     }
     .btn_wrap {
+      button {
+        width: 15px;
+        line-height: 15px;
+        vertical-align: middle;
+        text-align: center;
+        background-color: #707070;
+        &.add_btn {
+          background-color: red;
+        }
+      }
     }
   }
 </style>

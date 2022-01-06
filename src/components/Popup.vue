@@ -2,7 +2,9 @@
   <div class="popWrap" :style="{ height: popInnerHeight + 'px' }" @click="blurCalendar">
     <div class="popInner">
       <div class="calendarWrap" v-if="popset.calendar.flag">
-        <div><DatePicker v-model="date" @dayclick="onDayClick" :attruibutes="attr" /></div>
+        <div>
+          <v-calendar :attributes="attr" @dayclick="onDayClick" :is-expanded="true"><DatePicker v-model="date" :attruibutes="attr"></DatePicker></v-calendar>
+        </div>
       </div>
       <div class="contextWrap" v-if="popset.context">
         <div>{{ popset.context.text }}</div>
@@ -17,7 +19,7 @@
 
 <script lang="ts">
   import { defineComponent, ref, computed, reactive, PropType, onMounted } from 'vue';
-  import { Calendar, DatePicker } from 'v-calendar';
+  import { DatePicker } from 'v-calendar';
   import { useStore } from 'vuex';
   import type { listDataType, popType } from '../pages/List.vue';
   import moment from 'moment';
@@ -28,15 +30,20 @@
     },
     setup(props, context) {
       const store = useStore();
-      const date = ref<Date | string>('');
+      const date = ref<Date | string>(new Date());
       const onDayClick = (e: any) => {
-        context.emit('selectDate', todoDate(e.date));
+        console.log(e);
+        date.value = e.date;
+        console.log(date.value);
       };
 
-      const attr = reactive({
-        style: {
-          backgroundColor: 'brown',
-        },
+      const attr = computed(() => {
+        return [
+          {
+            highlight: true,
+            dates: date.value,
+          },
+        ];
       });
       const blurCalendar = (e?: Event) => {
         if (e && e.currentTarget === e.target) {
@@ -49,7 +56,10 @@
       const confirmPop = () => {
         if (props.popset?.calendar.flag) {
           if (!date.value) {
-            context.emit('emptyDate', '날짜를 선택해주세요');
+            // context.emit('emptyDate', '날짜를 선택해주세요');
+          } else if (date.value) {
+            context.emit('selectDate', todoDate(date.value as Date));
+            closePop();
           } else {
             closePop();
           }
@@ -59,15 +69,14 @@
         return window.innerHeight;
       });
       const todoDate = (dateData: Date) => {
-        date.value = moment(dateData).format('YY년 MM월 DD일');
-        return date.value;
+        return moment(dateData).format('YY년 MM월 DD일');
       };
       return { date, blurCalendar, onDayClick, popInnerHeight, attr, todoDate, closePop, confirmPop };
     },
   });
 </script>
 
-<style lang="scss">
+<style lang="scss" scoped>
   .popWrap {
     width: 100%;
     background: rgba(0, 0, 0, 0.2);
@@ -116,6 +125,7 @@
     align-items: center;
     margin: 0 auto;
   }
+  .vc-container::v-deep {
+    border: none;
+  }
 </style>
-
-function onMounted(arg0: () => void) { throw new Error('Function not implemented.'); }
