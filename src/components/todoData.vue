@@ -13,7 +13,7 @@
           </div>
         </div>
       </li>
-      <li><label @click="setCalendar">날짜</label><input type="text" v-model="listDataP.time" :readonly="cate !== 'write' ? true : false" /></li>
+      <li><label @click="setCalendar">시간</label><VueTimepicker v-model="todotime"></VueTimepicker></li>
       <li><label @click="setCalendar">날짜</label><input type="text" v-model="listDataP.date" :readonly="cate !== 'write' ? true : false" /></li>
     </ul>
     <div class="btn_wrap"><button v-if="cate !== 'write'" @click="delTodo" class="del_btn">-</button><button v-else-if="cate === 'write'" @click="addTodo" class="add_btn">+</button></div>
@@ -25,6 +25,8 @@
   import { defineComponent, reactive, PropType, ref, computed, onMounted, watch, watchEffect, toRefs, toRef } from 'vue';
   import { useStore } from 'vuex';
   import type { listDataType } from '../pages/List.vue';
+  // import VueTimepicker from 'vue3-timepicker';
+  import VueTimepicker from 'vue3-timepicker';
   export default defineComponent({
     props: {
       listData: Object as PropType<listDataType>,
@@ -32,6 +34,9 @@
       cate: { type: String, default: '' },
       number: { type: Number, default: 0 },
       listTodo: { type: Array },
+    },
+    components: {
+      VueTimepicker,
     },
     setup(props, context) {
       let listDataP = toRef(props, 'listData');
