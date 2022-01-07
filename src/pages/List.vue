@@ -54,6 +54,7 @@
         time: '',
         date: moment(new Date()).format('YY년 MM월 DD일'),
       });
+      const emptyMsg = ref<string>('');
       const listStore = reactive<[listDataType?]>([]);
       const popset = reactive<popType>({
         context: { text: '' },
@@ -73,6 +74,16 @@
       const selectDate = (date: Date) => {
         newListData.date = date;
       };
+
+      const emptyInsert = (msg: string) => {
+        popset.context.text = msg;
+        popset.confirmBtn.text = '확인';
+        popset.confirmBtn.flag = true;
+        popset.cancelBtn.flag = true;
+        popset.cancelBtn.text = '취소';
+        popset.calendar.flag = false;
+        store.commit('SET_POP', true);
+      };
       const addTodo = (list: listDataType) => {
         newListData.date = list.date;
         newListData.time = list.time;
@@ -80,17 +91,18 @@
         const values = Object.values(newListData);
         const keys = Object.keys(newListData);
         if (values.includes('')) {
-          const emptyVal = values.filter((e, i) => {
+          emptyMsg.value = '';
+          values.filter((e, i) => {
             if (e === '') {
-              console.log(i, keys[i]);
+              console.log(i, keys[i], '?');
+              let emptyValue;
+              keys[i] === 'work' ? (emptyValue = '계획') : (emptyValue = '날짜');
+              emptyMsg.value = emptyMsg.value + ', ' + emptyValue;
               return keys[i];
             }
           });
-          for (let e of emptyVal) {
-            console.log(keys[e as number]);
-            keys[e as number];
-            emptyInsert(keys[e as number]);
-          }
+          emptyMsg.value = emptyMsg.value.substr(1);
+          emptyInsert(`${emptyMsg.value} 내용이 비어있습니다.`);
           return;
         }
         listStore.push({ ...newListData });
@@ -105,15 +117,6 @@
           });
           newListData.number = listStore.length + 1;
         }
-      };
-      const emptyInsert = (msg: string) => {
-        popset.context.text = msg;
-        popset.confirmBtn.text = '확인';
-        popset.confirmBtn.flag = true;
-        popset.cancelBtn.flag = true;
-        popset.cancelBtn.text = '취소';
-        popset.calendar.flag = false;
-        store.commit('SET_POP', true);
       };
       const setCalendar = () => {
         popset.confirmBtn.flag = true;

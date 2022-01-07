@@ -2,7 +2,18 @@
   <div class="todo_list">
     <ul class="plan_list" :class="cate">
       <li><label>번호no</label><input type="text" v-model="listDataP.number" :readonly="cate !== 'write' ? true : false" /></li>
-      <li class="what_todo" @click="whatTodo"><label>계획</label><input type="text" v-model="listDataP.work" :readonly="cate !== 'write' ? true : false" /></li>
+      <li class="what_todo" @click="whatTodo">
+        <label>계획</label>
+        <div class="work_wrap">
+          <div class="input_wrap"><input type="text" @keyup.enter="addTodoWork" v-model="listDataP.work" :readonly="cate !== 'write' ? true : false" /></div>
+          <div v-if="cate === 'write'" class="store_work">
+            <div v-for="(item, i) in insertTodo" :key="i">
+              <input type="text" :value="item" :readonly="cate !== 'write' ? true : false" @input="editStoreWork($event, i)" />
+            </div>
+          </div>
+        </div>
+      </li>
+      <li><label @click="setCalendar">날짜</label><input type="text" v-model="listDataP.time" :readonly="cate !== 'write' ? true : false" /></li>
       <li><label @click="setCalendar">날짜</label><input type="text" v-model="listDataP.date" :readonly="cate !== 'write' ? true : false" /></li>
     </ul>
     <div class="btn_wrap"><button v-if="cate !== 'write'" @click="delTodo" class="del_btn">-</button><button v-else-if="cate === 'write'" @click="addTodo" class="add_btn">+</button></div>
@@ -11,7 +22,7 @@
 
 <script lang="ts">
   import moment from 'moment';
-  import { defineComponent, reactive, PropType, computed, onMounted, watch, watchEffect, toRefs, toRef } from 'vue';
+  import { defineComponent, reactive, PropType, ref, computed, onMounted, watch, watchEffect, toRefs, toRef } from 'vue';
   import { useStore } from 'vuex';
   import type { listDataType } from '../pages/List.vue';
   export default defineComponent({
@@ -20,6 +31,7 @@
       date: { type: [Date, String] },
       cate: { type: String, default: '' },
       number: { type: Number, default: 0 },
+      listTodo: { type: Array },
     },
     setup(props, context) {
       let listDataP = toRef(props, 'listData');
@@ -43,16 +55,27 @@
           list = { ...props.listData };
         }
       };
+      const insertTodo = ref<string[]>([]);
+      const addTodoWork = () => {
+        insertTodo.value.push(('-' + listDataP.value?.work) as string);
+        if (listDataP.value) {
+          return (listDataP.value.work = '');
+        }
+      };
       const setCalendar = () => {
         context.emit('setCalendar');
       };
       const setStoreList = () => {
         list = listDataP.value as listDataType;
       };
+      const editStoreWork = (e: Event, changeTargetIndex: number) => {
+        console.log(e, (e.target as HTMLInputElement).value, insertTodo.value[changeTargetIndex]);
+        insertTodo.value[changeTargetIndex] = (e.target as HTMLInputElement).value;
+      };
       onMounted(() => {
         setStoreList();
       });
-      return { list, addTodo, delTodo, initData, setCalendar, listDataP, numberDataP, setStoreList };
+      return { list, addTodo, delTodo, initData, setCalendar, listDataP, numberDataP, setStoreList, insertTodo, editStoreWork, addTodoWork };
     },
   });
 </script>
@@ -80,7 +103,9 @@
           width: 50%;
           height: 100%;
           background-color: powderblue;
-          display: inline-block;
+          display: inline-flex;
+          justify-content: center;
+          align-items: center;
           color: #fff;
           vertical-align: middle;
           line-height: 22px;
@@ -90,13 +115,42 @@
             width: 30%;
           }
         }
+        .work_wrap {
+          display: flex;
+          flex-direction: column;
+          flex: 1;
+          border: 1px solid red;
+          .input_wrap {
+            width: 100%;
+            input {
+              width: 100%;
+              position: relative;
+              border: none;
+              &::before {
+                content: '-';
+                position: absolute;
+                left: 0;
+                top: 0;
+              }
+            }
+          }
+
+          .store_work {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            input {
+              width: 100%;
+              border: none;
+            }
+          }
+        }
         input {
           width: 50%;
           height: 100%;
           text-align: center;
           box-sizing: border-box;
           border: 1px solid red;
-          border-bottom: none;
           vertical-align: middle;
           font-family: cute;
           &.num_value {
@@ -109,7 +163,9 @@
             width: 150px;
           }
           input {
+            padding: 0 2%;
             flex: 1;
+            flex-wrap: nowrap;
           }
         }
       }
