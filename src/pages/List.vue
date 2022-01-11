@@ -1,5 +1,6 @@
 <template>
   <div class="list-wrap">
+    <Search @search="search"></Search>
     <div class="list-container">
       <TodoData :listData="newListData" :cate="cate.write" @setCalendar="setCalendar" @addTodo="addTodo"></TodoData>
       <div class="new_plan" ref="new_plan" v-if="storeListFlag">
@@ -12,9 +13,9 @@
         </draggable>
 
         <div class="target" ref="target"></div>
-        <div class="loading">
-          <transition-group name="fade" tag="div"><img v-if="!loading" src="@/assets/images/loading.png" /></transition-group>
-        </div>
+      </div>
+      <div class="loading">
+        <img v-if="loading !== false" src="@/assets/images/loading.png" />
       </div>
     </div>
     <draggable v-model="listStore">
@@ -30,6 +31,7 @@
   import { useStore } from 'vuex';
   import TodoData from '@/components/TodoData.vue';
   import Popup from '@/components/Popup.vue';
+  import Search from '@/components/Search.vue';
   import moment from 'moment';
   import { VueDraggableNext } from 'vue-draggable-next';
   export type listDataType = {
@@ -46,9 +48,9 @@
   };
 
   export default defineComponent({
-    components: { TodoData, Popup, draggable: VueDraggableNext },
+    components: { TodoData, Popup, draggable: VueDraggableNext, Search },
     setup() {
-      const loading = ref<boolean>(false);
+      const loading = ref<boolean>(true);
       const store = useStore();
       const newListData = reactive<listDataType>({
         number: 1,
@@ -145,6 +147,15 @@
           newListData.number = listStore.length + 1;
         }
       };
+      const search = (word: string) => {
+        console.log(word);
+        let searchWord;
+        word ? (searchWord = word.trim()) : (searchWord = word);
+        if (!searchWord) {
+          emptyInsert('검색어를 입력해주세요');
+        }
+      };
+
       const setCalendar = () => {
         popset.confirmBtn.flag = true;
         popset.confirmBtn.text = '확인';
@@ -153,7 +164,7 @@
         popset.calendar.flag = true;
         store.commit('SET_POP', true);
       };
-
+      const;
       const storeListFlag = computed(() => {
         if (listStore) {
           return true;
@@ -162,17 +173,23 @@
         }
       });
       const onScroll = () => {
+        alert(loading.value);
         const options = { root: document.getElementsByClassName('new_plan')[0], rootMargin: '10px', threshold: 0 };
-        const callback = (entries: IntersectionObserverEntry[], observe: IntersectionObserver) => {
-          entries.forEach(entry => {
-            if (entry.isIntersecting) {
-              setShowListStore(showListStoreStartIndex.value, showListStoreEndIndex.value);
-              showListStoreStartIndex.value = showListStoreStartIndex.value + 10;
-              showListStoreEndIndex.value = showListStoreEndIndex.value + 10;
-            } else {
-              console.log('bye');
-            }
-          });
+        const callback = async (entries: IntersectionObserverEntry[], observe: IntersectionObserver) => {
+          setTimeout(() => {
+            entries.forEach(entry => {
+              console.log(112);
+              if (entry.isIntersecting) {
+                setShowListStore(showListStoreStartIndex.value, showListStoreEndIndex.value);
+                showListStoreStartIndex.value = showListStoreStartIndex.value + 10;
+                showListStoreEndIndex.value = showListStoreEndIndex.value + 10;
+                loading.value = false;
+              } else {
+                console.log('bye');
+              }
+            });
+            console.log(119);
+          }, 1000);
         };
         const observer = new IntersectionObserver(callback, options);
         observer.observe(target.value!);
@@ -206,6 +223,7 @@
         emptyInsert,
         onScroll,
         setShowListStore,
+        search,
       };
     },
   });
@@ -225,7 +243,6 @@
       width: 100%;
       height: 15vh;
       position: relative;
-      display: none;
       img {
         width: 5%;
         position: absolute;
