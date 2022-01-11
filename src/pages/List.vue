@@ -2,14 +2,16 @@
   <div class="list-wrap">
     <div class="list-container">
       <TodoData :listData="newListData" :cate="cate.write" @setCalendar="setCalendar" @addTodo="addTodo"></TodoData>
-      <div class="new_plan" v-if="storeListFlag">
+      <div class="new_plan" ref="new_plan" v-if="storeListFlag">
         <draggable class="store_list_wrap" @update="changeOrder" :list="listStore" :sort="true" dragable="true">
           <transition-group>
-            <div class="data" v-for="(e, i) in listStore" :key="i">
-              <TodoData :listData="e" :cate="cate.store" :number="i + 1" @delTodo="delTodo"></TodoData>
+            <div :key="i" class="data" v-for="(e, i) in listStore" :ref="listStorePush">
+              <TodoData :listData="e" :cate="cate.store" :number="i + 1"></TodoData>
             </div>
           </transition-group>
         </draggable>
+
+        <div class="target" ref="target"></div>
         <div class="loading">
           <transition-group name="fade" tag="div"><img v-if="!loading" src="@/assets/images/loading.png" /></transition-group>
         </div>
@@ -18,8 +20,8 @@
     <draggable v-model="listStore">
       <div>dd</div>
     </draggable>
+
     <Popup v-if="store.state.checkPop" :popset="popset" @selectDate="selectDate"></Popup>
-    <pagination></pagination>
   </div>
 </template>
 
@@ -62,6 +64,13 @@
         cancelBtn: { flag: false, text: '' },
         calendar: { flag: false },
       });
+      const target = ref<HTMLElement | Element | null>(null);
+
+      const new_plan = ref<HTMLElement | null>(null);
+      const listStoreArray = ref<HTMLElement[] | null>(null);
+      const listStorePush = (el: HTMLElement) => {
+        listStoreArray.value?.push(el);
+      };
       const cate = ref<{ write: string; store: string }>({ write: 'write', store: 'store' });
       const changeOrder = (event: Event) => {
         let passData: listDataType[] = [];
@@ -74,7 +83,6 @@
       const selectDate = (date: Date) => {
         newListData.date = date;
       };
-
       const emptyInsert = (msg: string) => {
         popset.context.text = msg;
         popset.confirmBtn.text = '확인';
@@ -126,6 +134,7 @@
         popset.calendar.flag = true;
         store.commit('SET_POP', true);
       };
+
       const storeListFlag = computed(() => {
         if (listStore) {
           return true;
@@ -133,10 +142,48 @@
           return false;
         }
       });
+      const onScroll = () => {
+        const options = { root: document.getElementsByClassName('new_plan')[0], rootMargin: '10px', threshold: 0 };
+        const callback = (entries: IntersectionObserverEntry[], observe: IntersectionObserver) => {
+          entries.forEach(entry => {
+            if (entry.isIntersecting) {
+              console.log('hi');
+            } else {
+              console.log('bye');
+            }
+          });
+        };
+        const observer = new IntersectionObserver(callback, options);
+        observer.observe(target.value!);
+      };
       onBeforeMount(() => {
         setStoreList();
       });
-      return { cate, loading, store, popset, newListData, listStore, storeListFlag, changeOrder, setStoreList, setCalendar, selectDate, addTodo, emptyInsert };
+      onMounted(() => {
+        // document.getElementsByClassName('new_plan')[0].addEventListener('scroll',
+        console.log(target.value, document.getElementsByClassName('target')[0]);
+        onScroll();
+        // );
+      });
+      return {
+        cate,
+        loading,
+        store,
+        popset,
+        newListData,
+        listStore,
+        storeListFlag,
+        new_plan,
+        target,
+        changeOrder,
+        setStoreList,
+        setCalendar,
+        selectDate,
+        addTodo,
+        emptyInsert,
+        onScroll,
+        listStorePush,
+      };
     },
   });
 </script>
@@ -155,6 +202,7 @@
       width: 100%;
       height: 15vh;
       position: relative;
+      display: none;
       img {
         width: 5%;
         position: absolute;
@@ -174,6 +222,15 @@
     }
   }
 
+  .new_plan {
+    max-height: 600px;
+    overflow: auto;
+    &::-webkit-scrollbar {
+      display: none;
+    }
+  }
+  .target {
+  }
   .store_list_wrap {
     .data:last-child {
       input {
