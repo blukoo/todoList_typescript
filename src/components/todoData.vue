@@ -13,7 +13,7 @@
           </div>
         </div>
       </li>
-      <li><label @click="setCalendar">시간</label><VueTimepicker v-model="todotime"></VueTimepicker></li>
+      <li class="what_time"><label @click="setCalendar">시간</label><VueTimepicker v-model="listDataP.time"></VueTimepicker></li>
       <li><label @click="setCalendar">날짜</label><input type="text" v-model="listDataP.date" :readonly="cate !== 'write' ? true : false" /></li>
     </ul>
     <div class="btn_wrap"><button v-if="cate !== 'write'" @click="delTodo" class="del_btn">-</button><button v-else-if="cate === 'write'" @click="addTodo" class="add_btn">+</button></div>
@@ -97,15 +97,39 @@
         display: inline-block;
         flex-grow: 1;
         &:nth-child(1) {
-          flex-basis: 150px;
+          flex-basis: 10%;
+          flex-grow: 0;
+        }
+        &:nth-child(2) {
+          flex-basis: 50%;
           flex-grow: 0;
         }
         &:nth-child(3) {
-          flex-basis: 200px;
+          flex-basis: 20%;
           flex-grow: 0;
         }
+        &:nth-child(4) {
+          flex-basis: 20%;
+          flex-grow: 0;
+        }
+        .vue__time-picker {
+          width: 7em;
+          flex-grow: 1;
+          .vue__time-picker-input {
+            width: 100%;
+          }
+          .select-list {
+            .dropdown {
+              top: 0;
+            }
+            li {
+              width: 100%;
+              font-size: small;
+            }
+          }
+        }
         label {
-          width: 50%;
+          width: 30%;
           height: 100%;
           background-color: powderblue;
           display: inline-flex;
@@ -151,7 +175,7 @@
           }
         }
         input {
-          width: 50%;
+          width: 70%;
           height: 100%;
           text-align: center;
           box-sizing: border-box;
@@ -162,10 +186,11 @@
             width: 70%;
           }
         }
-        &.what_todo {
+        &.what_todo,
+        &.what_time {
           display: flex;
           label {
-            width: 150px;
+            width: 70px;
           }
           input {
             padding: 0 2%;

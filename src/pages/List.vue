@@ -39,6 +39,7 @@
   export type popType = {
     context: { text: string };
     confirmBtn: { flag: boolean; text: string };
+    confirmType: { value: string };
     cancelBtn: { flag: boolean; text: string };
     calendar: { flag: boolean };
   };
@@ -58,6 +59,7 @@
       const listStore = reactive<[listDataType?]>([]);
       const popset = reactive<popType>({
         context: { text: '' },
+        confirmType: { value: '' },
         confirmBtn: { flag: false, text: '' },
         cancelBtn: { flag: false, text: '' },
         calendar: { flag: false },
@@ -78,6 +80,7 @@
       const emptyInsert = (msg: string) => {
         popset.context.text = msg;
         popset.confirmBtn.text = '확인';
+        popset.confirmType.value = 'empty';
         popset.confirmBtn.flag = true;
         popset.cancelBtn.flag = true;
         popset.cancelBtn.text = '취소';
@@ -121,6 +124,7 @@
       const setCalendar = () => {
         popset.confirmBtn.flag = true;
         popset.confirmBtn.text = '확인';
+        popset.confirmType.value = 'calendar';
         popset.cancelBtn.flag = true;
         popset.cancelBtn.text = '취소';
         popset.calendar.flag = true;

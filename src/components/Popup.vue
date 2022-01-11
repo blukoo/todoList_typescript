@@ -54,7 +54,7 @@
         store.commit('SET_POP', false);
       };
       const confirmPop = () => {
-        if (props.popset?.calendar.flag) {
+        if (props.popset?.confirmType.value === 'calendar') {
           if (!date.value) {
             // context.emit('emptyDate', '날짜를 선택해주세요');
           } else if (date.value) {
@@ -63,6 +63,8 @@
           } else {
             closePop();
           }
+        } else if (props.popset?.confirmType.value === 'empty') {
+          closePop();
         }
       };
       const popInnerHeight = computed(() => {
