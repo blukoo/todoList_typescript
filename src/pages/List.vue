@@ -168,7 +168,7 @@
         popset.calendar.flag = true;
         store.commit('SET_POP', true);
       };
-      const;
+
       const storeListFlag = computed(() => {
         if (listStore) {
           return true;
@@ -177,7 +177,6 @@
         }
       });
       const onScroll = () => {
-        alert(loading.value);
         const options = { root: document.getElementsByClassName('new_plan')[0], rootMargin: '10px', threshold: 0 };
         const callback = async (entries: IntersectionObserverEntry[], observe: IntersectionObserver) => {
           setTimeout(() => {
@@ -268,7 +267,6 @@
 
   .new_plan {
     max-height: 150px;
-    overflow: auto;
     &::-webkit-scrollbar {
       display: none;
     }

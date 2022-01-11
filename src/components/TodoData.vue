@@ -118,10 +118,11 @@
           .vue__time-picker-input {
             width: 100%;
           }
+          .dropdown {
+            width: 100%;
+            top: 23px;
+          }
           .select-list {
-            .dropdown {
-              top: 0;
-            }
             li {
               width: 100%;
               font-size: small;
