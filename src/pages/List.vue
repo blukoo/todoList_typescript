@@ -1,25 +1,28 @@
 <template>
   <div class="list-wrap">
+    <Search @search="search"></Search>
     <div class="list-container">
       <TodoData :listData="newListData" :cate="cate.write" @setCalendar="setCalendar" @addTodo="addTodo"></TodoData>
-      <div class="new_plan" v-if="storeListFlag">
+      <div class="new_plan" ref="new_plan" v-if="storeListFlag">
         <draggable class="store_list_wrap" @update="changeOrder" :list="listStore" :sort="true" dragable="true">
           <transition-group>
-            <div class="data" v-for="(e, i) in listStore" :key="i">
+            <div :key="i" class="data" v-for="(e, i) in showListStore">
               <TodoData :listData="e" :cate="cate.store" :number="i + 1" @delTodo="delTodo"></TodoData>
             </div>
           </transition-group>
         </draggable>
-        <div class="loading">
-          <transition-group name="fade" tag="div"><img v-if="!loading" src="@/assets/images/loading.png" /></transition-group>
-        </div>
+
+        <div class="target" ref="target"></div>
+      </div>
+      <div class="loading">
+        <img v-if="loading !== false" src="@/assets/images/loading.png" />
       </div>
     </div>
     <draggable v-model="listStore">
       <div>dd</div>
     </draggable>
+
     <Popup v-if="store.state.checkPop" :popset="popset" @selectDate="selectDate"></Popup>
-    <pagination></pagination>
   </div>
 </template>
 
@@ -28,6 +31,7 @@
   import { useStore } from 'vuex';
   import TodoData from '@/components/TodoData.vue';
   import Popup from '@/components/Popup.vue';
+  import Search from '@/components/Search.vue';
   import moment from 'moment';
   import { VueDraggableNext } from 'vue-draggable-next';
   export type listDataType = {
@@ -45,9 +49,9 @@
   };
 
   export default defineComponent({
-    components: { TodoData, Popup, draggable: VueDraggableNext },
+    components: { TodoData, Popup, draggable: VueDraggableNext, Search },
     setup() {
-      const loading = ref<boolean>(false);
+      const loading = ref<boolean>(true);
       const store = useStore();
       const newListData = reactive<listDataType>({
         number: 1,
@@ -57,6 +61,7 @@
       });
       const emptyMsg = ref<string>('');
       const listStore = reactive<[listDataType?]>([]);
+      let showListStore = reactive<[listDataType?]>([]);
       const popset = reactive<popType>({
         context: { text: '' },
         confirmType: { value: '' },
@@ -64,6 +69,9 @@
         cancelBtn: { flag: false, text: '' },
         calendar: { flag: false },
       });
+      const target = ref<HTMLElement | Element | null>(null);
+
+      const new_plan = ref<HTMLElement | null>(null);
       const cate = ref<{ write: string; store: string }>({ write: 'write', store: 'store' });
       const changeOrder = (event: Event) => {
         let passData: listDataType[] = [];
@@ -76,7 +84,6 @@
       const selectDate = (date: Date) => {
         newListData.date = date;
       };
-
       const emptyInsert = (msg: string) => {
         popset.context.text = msg;
         popset.confirmBtn.text = '확인';
@@ -112,6 +119,28 @@
         window.localStorage.setItem('plan_list', JSON.stringify(listStore));
         newListData.number = (newListData.number as number) + 1;
       };
+      const delTodo = (i: number) => {
+        listStore.splice(i, i + 1);
+        listStore.map((e, i) => {
+          if (e) {
+            e.number = i + 1;
+          }
+        });
+        // const defauleValue = JSON.parse(window.localStorage.getItem('plan_list')!);
+        window.localStorage.setItem('plan_list', JSON.stringify(listStore));
+      };
+      const showListStoreStartIndex = ref<number>(0);
+      const showListStoreEndIndex = ref<number>(10);
+      const setShowListStore = (startIndex: number, endIndex: number) => {
+        showListStore.push(...listStore.slice(startIndex, endIndex));
+        console.log(endIndex, listStore.slice(startIndex, endIndex), showListStore);
+        listStore.map((e, i) => {
+          if (e) {
+            e.number = i + 1;
+          }
+        });
+        // window.localStorage.setItem('plan_list', JSON.stringify(listStore));
+      };
       const setStoreList = () => {
         if (window.localStorage.getItem('plan_list')) {
           const plan = JSON.parse(window.localStorage.getItem('plan_list') as string);
@@ -121,6 +150,15 @@
           newListData.number = listStore.length + 1;
         }
       };
+      const search = (word: string) => {
+        console.log(word);
+        let searchWord;
+        word ? (searchWord = word.trim()) : (searchWord = word);
+        if (!searchWord) {
+          emptyInsert('검색어를 입력해주세요');
+        }
+      };
+
       const setCalendar = () => {
         popset.confirmBtn.flag = true;
         popset.confirmBtn.text = '확인';
@@ -130,6 +168,7 @@
         popset.calendar.flag = true;
         store.commit('SET_POP', true);
       };
+      const;
       const storeListFlag = computed(() => {
         if (listStore) {
           return true;
@@ -137,10 +176,59 @@
           return false;
         }
       });
+      const onScroll = () => {
+        alert(loading.value);
+        const options = { root: document.getElementsByClassName('new_plan')[0], rootMargin: '10px', threshold: 0 };
+        const callback = async (entries: IntersectionObserverEntry[], observe: IntersectionObserver) => {
+          setTimeout(() => {
+            entries.forEach(entry => {
+              console.log(112);
+              if (entry.isIntersecting) {
+                setShowListStore(showListStoreStartIndex.value, showListStoreEndIndex.value);
+                showListStoreStartIndex.value = showListStoreStartIndex.value + 10;
+                showListStoreEndIndex.value = showListStoreEndIndex.value + 10;
+                loading.value = false;
+              } else {
+                console.log('bye');
+              }
+            });
+            console.log(119);
+          }, 1000);
+        };
+        const observer = new IntersectionObserver(callback, options);
+        observer.observe(target.value!);
+      };
       onBeforeMount(() => {
         setStoreList();
       });
-      return { cate, loading, store, popset, newListData, listStore, storeListFlag, changeOrder, setStoreList, setCalendar, selectDate, addTodo, emptyInsert };
+      onMounted(() => {
+        onScroll();
+        // );
+      });
+      return {
+        cate,
+        loading,
+        store,
+        popset,
+        newListData,
+        listStore,
+        storeListFlag,
+        new_plan,
+        target,
+        showListStoreStartIndex,
+        showListStoreEndIndex,
+        showListStore,
+        changeOrder,
+        setStoreList,
+        setCalendar,
+        selectDate,
+        addTodo,
+        delTodo,
+        emptyInsert,
+        onScroll,
+        setShowListStore,
+        search,
+      };
     },
   });
 </script>
@@ -178,6 +266,15 @@
     }
   }
 
+  .new_plan {
+    max-height: 150px;
+    overflow: auto;
+    &::-webkit-scrollbar {
+      display: none;
+    }
+  }
+  .target {
+  }
   .store_list_wrap {
     .data:last-child {
       input {

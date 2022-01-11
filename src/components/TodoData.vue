@@ -49,7 +49,7 @@
       });
       const delTodo = () => {
         console.log(listDataP.value, '리스트');
-        context.emit('delTodo', listDataP.value);
+        context.emit('delTodo', listDataP.value?.number);
       };
       const addTodo = () => {
         console.log(listDataP.value, '리스트');
