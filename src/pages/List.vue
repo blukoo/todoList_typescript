@@ -5,8 +5,8 @@
       <div class="new_plan" ref="new_plan" v-if="storeListFlag">
         <draggable class="store_list_wrap" @update="changeOrder" :list="listStore" :sort="true" dragable="true">
           <transition-group>
-            <div :key="i" class="data" v-for="(e, i) in listStore" :ref="listStorePush">
-              <TodoData :listData="e" :cate="cate.store" :number="i + 1"></TodoData>
+            <div :key="i" class="data" v-for="(e, i) in showListStore">
+              <TodoData :listData="e" :cate="cate.store" :number="i + 1" @delTodo="delTodo"></TodoData>
             </div>
           </transition-group>
         </draggable>
@@ -58,6 +58,7 @@
       });
       const emptyMsg = ref<string>('');
       const listStore = reactive<[listDataType?]>([]);
+      let showListStore = reactive<[listDataType?]>([]);
       const popset = reactive<popType>({
         context: { text: '' },
         confirmBtn: { flag: false, text: '' },
@@ -67,10 +68,6 @@
       const target = ref<HTMLElement | Element | null>(null);
 
       const new_plan = ref<HTMLElement | null>(null);
-      const listStoreArray = ref<HTMLElement[] | null>(null);
-      const listStorePush = (el: HTMLElement) => {
-        listStoreArray.value?.push(el);
-      };
       const cate = ref<{ write: string; store: string }>({ write: 'write', store: 'store' });
       const changeOrder = (event: Event) => {
         let passData: listDataType[] = [];
@@ -117,6 +114,28 @@
         window.localStorage.setItem('plan_list', JSON.stringify(listStore));
         newListData.number = (newListData.number as number) + 1;
       };
+      const delTodo = (i: number) => {
+        listStore.splice(i, i + 1);
+        listStore.map((e, i) => {
+          if (e) {
+            e.number = i + 1;
+          }
+        });
+        // const defauleValue = JSON.parse(window.localStorage.getItem('plan_list')!);
+        window.localStorage.setItem('plan_list', JSON.stringify(listStore));
+      };
+      const showListStoreStartIndex = ref<number>(0);
+      const showListStoreEndIndex = ref<number>(10);
+      const setShowListStore = (startIndex: number, endIndex: number) => {
+        showListStore.push(...listStore.slice(startIndex, endIndex));
+        console.log(endIndex, listStore.slice(startIndex, endIndex), showListStore);
+        listStore.map((e, i) => {
+          if (e) {
+            e.number = i + 1;
+          }
+        });
+        // window.localStorage.setItem('plan_list', JSON.stringify(listStore));
+      };
       const setStoreList = () => {
         if (window.localStorage.getItem('plan_list')) {
           const plan = JSON.parse(window.localStorage.getItem('plan_list') as string);
@@ -147,7 +166,9 @@
         const callback = (entries: IntersectionObserverEntry[], observe: IntersectionObserver) => {
           entries.forEach(entry => {
             if (entry.isIntersecting) {
-              console.log('hi');
+              setShowListStore(showListStoreStartIndex.value, showListStoreEndIndex.value);
+              showListStoreStartIndex.value = showListStoreStartIndex.value + 10;
+              showListStoreEndIndex.value = showListStoreEndIndex.value + 10;
             } else {
               console.log('bye');
             }
@@ -160,8 +181,6 @@
         setStoreList();
       });
       onMounted(() => {
-        // document.getElementsByClassName('new_plan')[0].addEventListener('scroll',
-        console.log(target.value, document.getElementsByClassName('target')[0]);
         onScroll();
         // );
       });
@@ -175,14 +194,18 @@
         storeListFlag,
         new_plan,
         target,
+        showListStoreStartIndex,
+        showListStoreEndIndex,
+        showListStore,
         changeOrder,
         setStoreList,
         setCalendar,
         selectDate,
         addTodo,
+        delTodo,
         emptyInsert,
         onScroll,
-        listStorePush,
+        setShowListStore,
       };
     },
   });
@@ -223,7 +246,7 @@
   }
 
   .new_plan {
-    max-height: 600px;
+    max-height: 150px;
     overflow: auto;
     &::-webkit-scrollbar {
       display: none;
