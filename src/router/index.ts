@@ -1,12 +1,13 @@
 import { createRouter, createWebHistory, RouteRecordRaw } from 'vue-router';
 import List from '../pages/List.vue';
-import Room from '../pages/Room.vue';
+import Schedule from '../pages/Schedule.vue';
 
 const routes: Array<RouteRecordRaw> = [
   {
     path: '/',
-    name: 'Room',
-    component: Room,
+    name: 'Schedule',
+    component: Schedule,
+    redirect: '/',
     children: [
       {
         path: '/',

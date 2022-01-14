@@ -10,14 +10,8 @@
     <div class="recent_search_wrap">
       <ul>
         <li v-for="(word, i) in recentWord" :key="i">
-          <span @click="searchWord = word">{{ word }}</span>
-          <span
-            @click="
-              console.log(recentWord);
-              recentWord.splice(i, i + 1);
-            "
-            >X</span
-          >
+          <span @click="searchWord = word" class="recent_text">{{ word }}</span>
+          <span class="close" @click="recentWord.splice(i, i + 1)">X</span>
         </li>
       </ul>
     </div>
@@ -31,8 +25,8 @@
       const searchWord = ref<string | null>(null);
       const recentWord = ref<string[]>([]);
       const search = () => {
-        if (searchWord.value!) {
-          recentWord.value.push(searchWord.value!);
+        if (searchWord.value) {
+          recentWord.value.push(searchWord.value);
           window.localStorage.setItem('recent_word', JSON.stringify(recentWord.value));
         }
         context.emit('search', searchWord.value);
@@ -73,25 +67,44 @@
       color: coral;
     }
     .close {
+      font-size: 2px;
       position: absolute;
       right: 2%;
       top: 50%;
       transform: translate(0, -50%);
+      cursor: pointer;
     }
   }
   .recent_search_wrap {
     width: 100%;
     background-color: #eee;
+    padding: 1%;
     ul {
       display: flex;
       flex-direction: row;
+      justify-content: space-evenly;
+      flex-wrap: wrap;
       li {
+        display: flex;
         text-align: center;
+        flex-direction: row;
+        justify-content: space-evenly;
+        flex-wrap: nowrap;
         cursor: pointer;
         background-color: antiquewhite;
         border: 1px solid brown;
-        flex-basis: 5%;
         border-radius: 10px;
+        margin-left: 1%;
+        margin-right: 1%;
+        margin-bottom: 1%;
+        padding: 1%;
+        .recent_text {
+          display: inline-block;
+          margin-right: 2%;
+        }
+        .close {
+          font-size: 1px;
+        }
       }
     }
   }
