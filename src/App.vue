@@ -4,6 +4,10 @@
   </div>
 </template>
 
+<script>
+  import myMixin from './mixin';
+  export default { mixins: [myMixin] };
+</script>
 <style lang="scss">
   @import 'assets/css/init.scss';
   :root {

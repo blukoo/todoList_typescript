@@ -1,7 +1,7 @@
 <template>
   <div class="back">
     <main-header />
-    <main>
+    <main class="main">
       <slot></slot>
     </main>
     <main-footer />
@@ -17,9 +17,12 @@
   });
 </script>
 
-<style>
+<style lang="scss" scoped>
   .back {
     background-image: url('../assets/images/background_image.jpg');
     background-size: cover;
+    .main {
+      position: relative;
+    }
   }
 </style>
