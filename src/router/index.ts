@@ -10,17 +10,35 @@ const routes: Array<RouteRecordRaw> = [
     redirect: '/',
     children: [
       {
-        path: '/',
+        path: '/List',
         name: 'List',
         component: List,
       },
       {
         path: '/about',
         name: 'About',
-        // route level code-splitting
-        // this generates a separate chunk (about.[hash].js) for this route
-        // which is lazy-loaded when the route is visited.
-        component: () => import(/* webpackChunkName: "about" */ '../pages/About.vue'),
+        component: () => import('../pages/About.vue'),
+      },
+    ],
+  },
+  {
+    path: '/test/test0',
+    name: 'test0',
+    component: () => import('../pages/Test0.vue'),
+  },
+  {
+    path: '/',
+    component: () => import('../layouts/Enter.vue'),
+    children: [
+      {
+        path: '/',
+        name: 'Login/:id',
+        component: () => import('../pages/Login.vue'),
+      },
+      {
+        path: '/Join',
+        name: 'Join',
+        component: () => import('../pages/Join.vue'),
       },
     ],
   },
