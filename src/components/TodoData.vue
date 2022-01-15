@@ -5,9 +5,9 @@
       <li class="what_todo" @click="whatTodo">
         <label>계획</label>
         <div class="work_wrap">
-          <div class="input_wrap"><input type="text" @keyup.enter="addTodoWork" v-model="listDataP.work" :readonly="cate !== 'write' ? true : false" /></div>
-          <div v-if="cate === 'write'" class="store_work">
-            <div v-for="(item, i) in insertTodo" :key="i">
+          <div v-if="cate === 'write'" class="input_wrap"><input type="text" @keyup.enter="addTodoWork" v-model="insertTodo" :readonly="cate !== 'write' ? true : false" /></div>
+          <div class="store_work">
+            <div v-for="(item, i) in listDataP?.work" :key="i">
               <input type="text" :value="item" :readonly="cate !== 'write' ? true : false" @input="editStoreWork($event, i)" />
             </div>
           </div>
@@ -23,9 +23,7 @@
 <script lang="ts">
   import moment from 'moment';
   import { defineComponent, reactive, PropType, ref, computed, onMounted, watch, watchEffect, toRefs, toRef } from 'vue';
-  import { useStore } from 'vuex';
   import type { listDataType } from '../pages/List.vue';
-  // import VueTimepicker from 'vue3-timepicker';
   import VueTimepicker from 'vue3-timepicker';
   export default defineComponent({
     props: {
@@ -51,8 +49,10 @@
         console.log(listDataP.value, '리스트');
         context.emit('delTodo', listDataP.value?.number);
       };
+      const insertTodo = ref<string>('');
       const addTodo = () => {
-        console.log(listDataP.value, '리스트');
+        // listDataP.value?.work = insertTodo.value as string[];
+        console.log(listDataP.value);
         context.emit('addTodo', listDataP.value);
       };
       const initData = () => {

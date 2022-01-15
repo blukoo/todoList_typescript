@@ -11,13 +11,7 @@
       <ul>
         <li v-for="(word, i) in recentWord" :key="i">
           <span @click="searchWord = word">{{ word }}</span>
-          <span
-            @click="
-              console.log(recentWord);
-              recentWord.splice(i, i + 1);
-            "
-            >X</span
-          >
+          <span @click="delRecentWord(i)" class="recent_delete">X</span>
         </li>
       </ul>
     </div>
@@ -26,24 +20,42 @@
 
 <script lang="ts">
   import { defineComponent, ref, reactive, computed, onMounted, watch, onBeforeMount } from 'vue';
+  import { setItem, getItem } from '@/global/util';
   export default defineComponent({
     setup(props, context) {
       const searchWord = ref<string | null>(null);
       const recentWord = ref<string[]>([]);
       const search = () => {
+        if (getItem('recent_word')) {
+          recentWord.value.map((e: string, i: number) => {
+            if (e === searchWord.value) {
+              recentWord.value.splice(i, 1);
+            }
+          });
+        }
         if (searchWord.value!) {
-          recentWord.value.push(searchWord.value!);
-          window.localStorage.setItem('recent_word', JSON.stringify(recentWord.value));
+          recentWord.value.unshift(searchWord.value!);
+          setItem('recent_word', recentWord.value);
         }
         context.emit('search', searchWord.value);
       };
+      const delRecentWord = (i: number) => {
+        recentWord.value.splice(i, i + 1);
+        setItem('recent_word', recentWord.value);
+      };
       const recentWordInit = () => {
-        window.localStorage.getItem('recent_word') ? (recentWord.value = JSON.parse(window.localStorage.getItem('recent_word') as string)) : [];
+        getItem('recent_word') ? (recentWord.value = JSON.parse(window.localStorage.getItem('recent_word') as string)) : [];
       };
       onMounted(() => {
         recentWordInit();
       });
-      return { searchWord, recentWord, search, recentWordInit };
+      return {
+        searchWord,
+        recentWord,
+        search,
+        recentWordInit,
+        delRecentWord,
+      };
     },
   });
 </script>
@@ -82,16 +94,37 @@
   .recent_search_wrap {
     width: 100%;
     background-color: #eee;
+    padding: 1%;
+    padding-bottom: 0;
     ul {
       display: flex;
+      flex-wrap: wrap;
       flex-direction: row;
       li {
         text-align: center;
         cursor: pointer;
         background-color: antiquewhite;
         border: 1px solid brown;
-        flex-basis: 5%;
+        // flex-basis: 5%;
         border-radius: 10px;
+        padding: 0 1%;
+        margin: 0 1% 1%;
+        display: flex;
+        gap: 1em;
+        align-items: center;
+        span {
+          text-align: left;
+          &.recent_delete {
+            width: 10px;
+            height: 10px;
+            background: red;
+            border-radius: 10px;
+            display: inline-block;
+            color: #fff;
+            font-size: 2px;
+            text-align: center;
+          }
+        }
       }
     }
   }
