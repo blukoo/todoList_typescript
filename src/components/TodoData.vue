@@ -5,9 +5,9 @@
       <li class="what_todo" @click="whatTodo">
         <label>계획</label>
         <div class="work_wrap">
-          <div v-if="cate === 'write'" class="input_wrap"><input type="text" @keyup.enter="addTodoWork" v-model="insertTodo" :readonly="cate !== 'write' ? true : false" /></div>
+          <div class="input_wrap"><input type="text" @keyup.enter="addTodoWork" v-model="insertTodo" :readonly="cate !== 'write' ? true : false" /></div>
           <div class="store_work">
-            <div v-for="(item, i) in listDataP?.work" :key="i">
+            <div v-for="(item, i) in listDataP.work" :key="i">
               <input type="text" :value="item" :readonly="cate !== 'write' ? true : false" @input="editStoreWork($event, i)" />
             </div>
           </div>
@@ -23,7 +23,9 @@
 <script lang="ts">
   import moment from 'moment';
   import { defineComponent, reactive, PropType, ref, computed, onMounted, watch, watchEffect, toRefs, toRef } from 'vue';
+  import { useStore } from 'vuex';
   import type { listDataType } from '../pages/List.vue';
+  // import VueTimepicker from 'vue3-timepicker';
   import VueTimepicker from 'vue3-timepicker';
   export default defineComponent({
     props: {
@@ -51,8 +53,13 @@
       };
       const insertTodo = ref<string>('');
       const addTodo = () => {
-        // listDataP.value?.work = insertTodo.value as string[];
-        console.log(listDataP.value);
+        if (insertTodo.value) {
+          listDataP.value?.work!.push('-' + (insertTodo.value as string));
+        }
+        console.log(listDataP.value, '리스트');
+        // if (listDataP.value?.work) {
+        //   listDataP.value?.work.push(insertTodo.value);
+        // }
         context.emit('addTodo', listDataP.value);
       };
       const initData = () => {
@@ -60,22 +67,21 @@
           list = { ...props.listData };
         }
       };
-      const insertTodo = ref<string[]>([]);
       const addTodoWork = () => {
-        insertTodo.value.push(('-' + listDataP.value?.work) as string);
-        if (listDataP.value) {
-          return (listDataP.value.work = '');
+        if (insertTodo.value) {
+          listDataP.value?.work!.push('-' + (insertTodo.value as string));
+          return (insertTodo.value = '');
         }
       };
       const setCalendar = () => {
         context.emit('setCalendar');
       };
       const setStoreList = () => {
-        list = listDataP.value as listDataType;
+        // list = listDataP.value as listDataType;
       };
       const editStoreWork = (e: Event, changeTargetIndex: number) => {
         console.log(e, (e.target as HTMLInputElement).value, insertTodo.value[changeTargetIndex]);
-        insertTodo.value[changeTargetIndex] = (e.target as HTMLInputElement).value;
+        listDataP.value!.work![changeTargetIndex] = (e.target as HTMLInputElement).value;
       };
       onMounted(() => {
         setStoreList();

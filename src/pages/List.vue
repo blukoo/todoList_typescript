@@ -34,7 +34,6 @@
   import Search from '@/components/Search.vue';
   import moment from 'moment';
   import { VueDraggableNext } from 'vue-draggable-next';
-  import { setItem, getItem } from '@/global/util';
   export type listDataType = {
     number?: number;
     work?: string[];
@@ -71,6 +70,7 @@
         calendar: { flag: false },
       });
       const target = ref<HTMLElement | Element | null>(null);
+
       const new_plan = ref<HTMLElement | null>(null);
       const cate = ref<{ write: string; store: string }>({ write: 'write', store: 'store' });
       const changeOrder = (event: Event) => {
@@ -79,7 +79,7 @@
           (e as listDataType).number = i + 1;
           passData.push(e as listDataType);
         });
-        setItem('plan_list', passData);
+        window.localStorage.setItem('plan_list', JSON.stringify(passData));
       };
       const selectDate = (date: Date) => {
         newListData.date = date;
@@ -95,12 +95,12 @@
         store.commit('SET_POP', true);
       };
       const addTodo = (list: listDataType) => {
-        // newListData.date = list.date;
-        // newListData.time = list.time;
-        // newListData.work = list?.work;
-        console.log(newListData.work, list, newListData, '리스트');
-        const values = Object.values(list);
-        const keys = Object.keys(list);
+        console.log(list);
+        newListData.date = list.date;
+        newListData.time = list.time;
+        newListData.work = list.work;
+        const values = Object.values(newListData);
+        const keys = Object.keys(newListData);
         if (values.includes('')) {
           emptyMsg.value = '';
           values.filter((e, i) => {
@@ -116,18 +116,14 @@
           emptyInsert(`${emptyMsg.value} 내용이 비어있습니다.`);
           return;
         }
-        listStore.push(list);
-        showListStore.push(list);
-        setItem('plan_list', listStore);
-        console.log(listStore, newListData, showListStore);
-        setTimeout(() => {
-          alert();
-          newListData.number = (newListData.number as number) + 1;
-          newListData.work = [];
-          newListData.time = '';
-          newListData.date = moment(new Date()).format('YY년 MM월 DD일');
-        }, 6000);
-        console.log(listStore, newListData, showListStore, 'ㅔ스ㅡ니');
+        listStore.push({ ...newListData });
+        showListStore.push({ ...newListData });
+
+        newListData.work = [];
+        newListData.time = '';
+        newListData.date = moment(new Date()).format('YY년 MM월 DD일');
+        window.localStorage.setItem('plan_list', JSON.stringify(listStore));
+        newListData.number = (newListData.number as number) + 1;
       };
       const delTodo = (i: number) => {
         listStore.splice(i, i + 1);
@@ -137,27 +133,25 @@
           }
         });
         // const defauleValue = JSON.parse(window.localStorage.getItem('plan_list')!);
-        setItem('plan_list', listStore);
+        window.localStorage.setItem('plan_list', JSON.stringify(listStore));
       };
       const showListStoreStartIndex = ref<number>(0);
       const showListStoreEndIndex = ref<number>(10);
       const setShowListStore = (startIndex: number, endIndex: number) => {
-        alert();
         showListStore.push(...listStore.slice(startIndex, endIndex));
+        console.log(endIndex, listStore.slice(startIndex, endIndex), showListStore);
         listStore.map((e, i) => {
           if (e) {
             e.number = i + 1;
           }
         });
+        // window.localStorage.setItem('plan_list', JSON.stringify(listStore));
       };
       const setStoreList = () => {
-        console.log(getItem('plan_list'));
-        if (getItem('plan_list')) {
-          console.log(getItem('plan_list'), getItem('plan_list') as listDataType[]);
-          (getItem('plan_list') as string[]).forEach((e, i) => {
-            console.log(e, getItem('plan_list') as string[]);
-            listStore?.push(e as listDataType);
-            console.log(listStore);
+        if (window.localStorage.getItem('plan_list')) {
+          const plan = JSON.parse(window.localStorage.getItem('plan_list') as string);
+          plan.forEach((e: listDataType, i: number) => {
+            listStore?.push({ ...e });
           });
           newListData.number = listStore.length + 1;
         }
@@ -168,17 +162,9 @@
         word ? (searchWord = word.trim()) : (searchWord = word);
         if (!searchWord) {
           emptyInsert('검색어를 입력해주세요');
-        } else {
-          // showListStore.splice(0, showListStore.length);
-          showListStore.filter((e, i) => {
-            if (!e?.work?.includes(word)) {
-              return showListStore.splice(i, 1);
-            } else {
-              console.log(word, e.work, i);
-            }
-          });
         }
       };
+
       const setCalendar = () => {
         popset.confirmBtn.flag = true;
         popset.confirmBtn.text = '확인';
