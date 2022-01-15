@@ -85,10 +85,12 @@
       color: coral;
     }
     .close {
+      font-size: 2px;
       position: absolute;
       right: 2%;
       top: 50%;
       transform: translate(0, -50%);
+      cursor: pointer;
     }
   }
   .recent_search_wrap {
@@ -100,8 +102,14 @@
       display: flex;
       flex-wrap: wrap;
       flex-direction: row;
+      justify-content: space-evenly;
+      flex-wrap: wrap;
       li {
+        display: flex;
         text-align: center;
+        flex-direction: row;
+        justify-content: space-evenly;
+        flex-wrap: nowrap;
         cursor: pointer;
         background-color: antiquewhite;
         border: 1px solid brown;

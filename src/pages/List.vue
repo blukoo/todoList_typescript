@@ -1,6 +1,6 @@
 <template>
   <div class="list-wrap">
-    <Search @search="search"></Search>
+    <Search @search="search" :recentWord="recentWord"></Search>
     <div class="list-container">
       <TodoData :listData="newListData" :cate="cate.write" @setCalendar="setCalendar" @addTodo="addTodo"></TodoData>
       <div class="new_plan" ref="new_plan" v-if="storeListFlag">
@@ -69,8 +69,8 @@
         cancelBtn: { flag: false, text: '' },
         calendar: { flag: false },
       });
+      const searchResult = reactive<listDataType[]>([]);
       const target = ref<HTMLElement | Element | null>(null);
-
       const new_plan = ref<HTMLElement | null>(null);
       const cate = ref<{ write: string; store: string }>({ write: 'write', store: 'store' });
       const changeOrder = (event: Event) => {
@@ -162,6 +162,24 @@
         word ? (searchWord = word.trim()) : (searchWord = word);
         if (!searchWord) {
           emptyInsert('검색어를 입력해주세요');
+          return;
+        }
+        if (window.localStorage.getItem('plan_list')) {
+          console.log('d');
+          const plan = JSON.parse(window.localStorage.getItem('plan_list') as string);
+          console.log(
+            Object.values(plan),
+            ...plan,
+            plan.map((e: listDataType, i: number) => {
+              Object.values(e).indexOf(word);
+            }),
+          );
+          plan.map((e: listDataType, i: number) => {
+            let index = Object.values(e).indexOf(word);
+            if (index >= 0) {
+              searchResult.push(...plan.slice(i, i + 1));
+            }
+          });
         }
       };
 
@@ -223,6 +241,7 @@
         showListStoreStartIndex,
         showListStoreEndIndex,
         showListStore,
+        searchResult,
         changeOrder,
         setStoreList,
         setCalendar,
