@@ -132,6 +132,7 @@ export default defineComponent({
   transform: translate(-50%, -50%);
   .contextWrap {
     height: 100%;
+    flex: 1;
     display: flex;
     justify-content: center;
     align-items: center;

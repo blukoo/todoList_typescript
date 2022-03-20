@@ -161,25 +161,31 @@ export default defineComponent({
       popset.calendar.flag = false;
       store.commit('SET_POP', true);
     };
+
     const addTodo = (list: listDataType) => {
-      console.log(list);
       newListData.date = list.date;
       newListData.time = list.time;
       newListData.work = list.work;
       const values = Object.values(newListData);
+      console.log(values);
       const keys = Object.keys(newListData);
-      if (values.includes('')) {
+      if (
+        list.date === '' ||
+        list.time?.HH === '' ||
+        list.time?.mm === '' ||
+        list.work?.length === 0
+      ) {
         emptyMsg.value = '';
-        values.filter((e, i) => {
-          if (e === '') {
-            let emptyValue;
-            keys[i] === 'work' ? (emptyValue = '계획') : (emptyValue = '시간');
-            emptyMsg.value = emptyMsg.value + ', ' + emptyValue;
-            return keys[i];
-          }
-        });
-        emptyMsg.value = emptyMsg.value.substr(1);
-        emptyInsert(`${emptyMsg.value} 내용이 비어있습니다.`);
+        if (list.work?.length === 0) {
+          emptyMsg.value = '계획';
+        }
+        if (list.time?.HH === '' || list.time?.mm === '') {
+          emptyMsg.value = emptyMsg.value + ', 시간';
+        }
+        if (emptyMsg.value.substring(0, 1) === ',') {
+          emptyMsg.value = emptyMsg.value.replace(',', '');
+        }
+        emptyInsert(`${emptyMsg.value} 이 비어있습니다.`);
         return;
       }
       listStore.push({
@@ -382,8 +388,10 @@ export default defineComponent({
 }
 
 .new_plan {
+  max-height: 150px;
+  overflow-y: scroll;
   &::-webkit-scrollbar {
-    display: none;
+    // display: none;
   }
 }
 .target {
