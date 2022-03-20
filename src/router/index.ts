@@ -7,7 +7,7 @@ const routes: Array<RouteRecordRaw> = [
     path: '/',
     name: 'Schedule',
     component: Schedule,
-    redirect: '/',
+    redirect: '/List',
     children: [
       {
         path: '/List',
